@@ -1,0 +1,18 @@
+{
+  "manifest_version": 2,
+
+  "name": "UT Courses",
+  "description": "This extension adds features to UT's course catalog.",
+  "version": "1.0",
+
+  "permissions": [
+    "https://utdirect.utexas.edu/registrar/"
+  ],
+
+  "content_scripts": [
+    {
+      "matches": ["https://utdirect.utexas.edu/registrar/nrclav/results.WBX*"],
+      "js": ["jquery-2.1.1.min.js", "contentscript.js"]
+    }
+  ]
+}
