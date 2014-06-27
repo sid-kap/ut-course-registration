@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
 
-  "name": "UT Courses",
-  "description": "This extension adds features to UT's course catalog.",
+  "name": "UT Course Registration",
+  "description": "Adds features to UT's course catalog.",
   "version": "1.0",
 
   "permissions": [
