@@ -1,0 +1,51 @@
+
+/* Ugly tables are ugly. */
+table {
+	border-collapse: collapse !important; 
+}
+
+span.chart {
+	display: inline-block;
+	min-height: 50%;
+	min-width: 1%;
+	position: relative;
+}
+
+span.chart-1 {
+	background-color: hsla(0, 100%, 50%, 1);
+}
+
+span.chart-2 {
+	background-color: hsla(30, 100%, 50%, 1);
+}
+
+span.chart-3 {
+	background-color: hsla(60, 100%, 50%, 1);
+}
+
+span.chart-4 {
+	background-color: hsla(90, 100%, 50%, 1);
+}
+
+span.chart-5 {
+	background-color: hsla(120, 100%, 50%, 1);
+}
+
+
+.chart:hover .tooltip {
+    display: inline;
+    left: 0;
+    right: 0;
+    width: 200px;
+    top: -25px;
+    text-align: center;
+}
+
+.tooltip {
+    display: none;
+    background: #73E5FF;
+    position: absolute;
+    z-index: 1000;
+    width:200px;
+    height:25px;
+}

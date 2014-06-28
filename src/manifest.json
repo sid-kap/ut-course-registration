@@ -12,7 +12,12 @@
   "content_scripts": [
     {
       "matches": ["https://utdirect.utexas.edu/registrar/nrclav/results.WBX*"],
-      "js": ["jquery-2.1.1.min.js", "contentscript.js"]
+      "js": ["jquery-2.1.1.min.js", "reg/contentscript.js"]
+    },
+    {
+      "matches": ["https://utdirect.utexas.edu/ctl/ecis/results/view_results.WBX*"],
+      "css": ["cis/cis.css"],
+      "js": ["jquery-2.1.1.min.js", "cis/contentScript.js"]
     }
   ]
 }
