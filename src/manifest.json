@@ -6,7 +6,8 @@
   "version": "1.0",
 
   "permissions": [
-    "https://utdirect.utexas.edu/registrar/"
+    "https://utdirect.utexas.edu/registrar/", 
+    "storage"
   ],
 
   "content_scripts": [
@@ -19,5 +20,7 @@
       "css": ["cis/cis.css"],
       "js": ["jquery-2.1.1.min.js", "cis/contentScript.js"]
     }
-  ]
+  ],
+
+  "options_page": "options.html"
 }

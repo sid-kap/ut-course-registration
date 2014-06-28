@@ -1,0 +1,56 @@
+* {
+	font-family: "Lato", sans-serif;
+	padding: 0;
+	margin: 0;
+}
+
+html {
+	height: 100%;
+}
+
+body {
+	background-color: #e6faaf;
+	height: 100%;
+}
+
+div#content {
+	padding: 0 !important;
+	margin-top: 0 !important;
+	margin-bottom: 0 !important;
+	margin-left: 15% !important;
+	margin-right: 15% !important;
+	background-color: #F2C23D;
+	min-height: 100%;
+}
+
+
+input[type=checkbox] {
+	width:30px;
+	height:30px;
+}
+
+span.option {
+	font-size: 200%;
+}
+
+h2, h3, input, div {
+	padding: 10px;
+	margin: 10px;
+}
+
+
+a {
+  text-decoration: none;
+}
+a:link {
+  color: #00f;
+}
+a:visited {
+  color: #00f;
+}
+a:hover {
+  color: #00f;
+}
+a:active {
+  color: #00f;
+}

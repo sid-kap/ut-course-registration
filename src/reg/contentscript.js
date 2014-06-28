@@ -1,20 +1,26 @@
 var $ = jQuery
 
-var counter = 0;
-
 $(function() {
-	$('body').append($('<div id="hiddenPages" hidden></div>'))
-	loadMorePages($('body'));
+	chrome.storage.sync.get('runScriptOnRegistrarPage', function(items) {
+		// Run the script only if the user has checked the box in the extension options.
+		if (items.runScriptOnRegistrarPage) {
+
+			$('body').append($('<div id="hiddenPages" hidden></div>'))
+			loadMorePages($('body'));
+
+		}
+	});
 });
 
 function loadMorePages (body) {
-	counter++;
-	console.log(counter);
 
 	var form = body.find('#next_page');
 
 	if (form.length === 0) {
-		console.log("Form not found on this page.");
+		// This must be the last page.
+		//console.log("Form not found on this page.");
+
+		// Get rid of the Previous Page/Next Page buttons
 		$('div.otherClasses').parent().parent().parent().parent().parent().parent().remove();
 		$('a.otherClasses').parent().parent().parent().remove();
 		return;
@@ -22,11 +28,14 @@ function loadMorePages (body) {
 
 	//Callback handler for form submit event
 	form.submit(function(e) {
-	 
+
 		var postData = $(this).serializeArray();
 		var formURL = $(this).attr("action");
 
 		var hiddenPages = $('#hiddenPages');
+
+		// Empty out the hidden page div so that we can add the 
+		// load the next page into it.
 		hiddenPages.empty();
 
 		$.ajax({
@@ -34,26 +43,29 @@ function loadMorePages (body) {
 			type: "GET",
 			data : postData,
 			success: function(data, textStatus, jqXHR) {
-				//data: return data from server
+				var table, rows, len, targetTable;
 				
+				// Put the background-loaded page into the hidden div
 				hiddenPages.html(data);
 
-				var table = hiddenPages.find('#classList tbody');
+				table = hiddenPages.find('#classList tbody');
 
-				var rows = table.children();
-				var len = rows.length;
+				rows = table.children();
+				len = rows.length;
 
-				var targetTable = $('body #classList');
-				console.log(targetTable);
+				targetTable = $('body #classList');
 
-				$.each(rows, function(index, value) {
+				// Copy over rows from the table of classes from the hidden div
+				$.each(rows, function(index, row) {
+					// Do not copy the first and last row of each table
+					// (we don't want the Previous page/Next page links)
 					if (index != 0 && index < len-2) {
-						console.log(value.innerText.replace(/\s{2,}/g, ' '));
-						targetTable.append(value);
+						targetTable.append(row);
+						//console.log(row.innerText.replace(/\s{2,}/g, ' '));
 					}
 				});
-				console.log('inserting into dom');
-				//console.log(hiddenPages);
+
+				// Load more pages!
 				setTimeout(function(){ loadMorePages(hiddenPages); }, 0);
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
@@ -62,7 +74,6 @@ function loadMorePages (body) {
 		});
 
 		e.preventDefault(); //STOP default action
-		//e.unbind(); //unbind. to stop multiple form submit.
 	}); 
 
 	form.submit(); //Submit the form

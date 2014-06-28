@@ -2,6 +2,16 @@
 var $ = jQuery;
 
 $(function() {
+	chrome.storage.sync.get('runScriptOnCisPage', function(items) {
+		// Run the script only if the user has checked the box in the extension options.
+		if (items.runScriptOnCisPage) {
+			makeCharts();
+		}
+	});
+});
+
+
+function makeCharts () {
 	$('tbody').each(function() {
 		var rows,
 		    tds,
@@ -82,7 +92,8 @@ $(function() {
 		}
 
 	});
-});
+}
+
 
 /**
  * Parses a string in the format 'NUM (NUM%)' into 'NUM%'
