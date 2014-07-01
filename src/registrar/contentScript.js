@@ -1,11 +1,13 @@
-var $ = jQuery
+
+var $ = jQuery;
 
 $(function() {
 
 	chrome.storage.sync.get('runScriptOnRegistrarPage', function(items) {
+		var $body;
 		var justEnabledSetting = false;
 
-		if ($.isEmptyObject(items)) {
+		if (!items.hasOwnProperty('runScriptOnRegistrarPage')) {
 			// First time using the extension
 			// Let's enable it by default.
 			chrome.storage.sync.set({'runScriptOnRegistrarPage': true}, function() {
@@ -14,8 +16,6 @@ $(function() {
 
 			justEnabledSetting = true;
 		}
-
-		var $body;
 
 		// Run the script only if the user has checked the box in the extension options,
 		// or if the script has been enabled by default the first time this page was opened.
@@ -27,14 +27,13 @@ $(function() {
 			loadMorePages($body);
 
 			injectFontAwesome();
-			makeInfoIcons();
 
 		}
 	});
 });
 
-function makeInfoIcons() {
-	$('span.title').append('<i class="fa fa-camera-retro fa-3x"></i>');
+function makeInfoIcons(context) {
+	$('tr.tbon > span.em', context).prepend('hi'); //<i class="fa fa-camera-retro fa-3x"></i>');
 }
 
 function loadMorePages (body) {
@@ -79,6 +78,8 @@ function loadMorePages (body) {
 				len = rows.length;
 
 				targetTable = $('body #classList');
+
+				makeInfoIcons(table);
 
 				// Copy over rows from the table of classes from the hidden div
 				$.each(rows, function(index, row) {

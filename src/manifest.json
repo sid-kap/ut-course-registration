@@ -13,18 +13,13 @@
   "content_scripts": [
     {
       "matches": ["https://utdirect.utexas.edu/registrar/nrclav/results.WBX*"],
-      "js": ["jquery-2.1.1.min.js", "registar/contentScript.js", "common.js"], 
-      "css": ["registrar.css"]
+      "js": ["jquery-2.1.1.min.js", "registrar/contentScript.js", "common.js"]
     },
     {
       "matches": ["https://utdirect.utexas.edu/ctl/ecis/results/view_results.WBX*"],
       "css": ["cis/cis.css"],
       "js": ["jquery-2.1.1.min.js", "cis/contentScript.js", "common.js"]
     }
-  ],
-
-  "web_accessible_resources": [
-    "resources/*"
   ],
 
   "options_page": "options.html"

@@ -6,10 +6,10 @@ $(function() {
 	chrome.storage.sync.get('runScriptOnCisPage', function(items) {
 		var justEnabledSetting = false;
 
-		if ($.isEmptyObject(items)) {
+		if (!items.hasOwnProperty('runScriptOnCisPage')) {
 			// First time using the extension
 			// Let's enable it by default.
-			chrome.storage.sync.set({'runScriptOnRegistrarPage': true}, function() {
+			chrome.storage.sync.set({'runScriptOnCisPage': true}, function() {
 				console.log('Run script on Registrar Page enabled by default.');
 			});
 
