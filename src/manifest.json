@@ -3,7 +3,7 @@
 
   "name": "UT Course Registration",
   "description": "Adds features to UT's course catalog.",
-  "version": "1.0",
+  "version": "1.1",
 
   "permissions": [
     "https://utdirect.utexas.edu/registrar/", 
@@ -13,7 +13,8 @@
   "content_scripts": [
     {
       "matches": ["https://utdirect.utexas.edu/registrar/nrclav/results.WBX*"],
-      "js": ["jquery-2.1.1.min.js", "registrar/contentScript.js", "common.js"]
+      "js": ["jquery-2.1.1.min.js", "registrar/contentScript.js", "common.js"],
+      "css": ["registrar/registrar.css"]
     },
     {
       "matches": ["https://utdirect.utexas.edu/ctl/ecis/results/view_results.WBX*"],
@@ -21,6 +22,15 @@
       "js": ["jquery-2.1.1.min.js", "cis/contentScript.js", "common.js"]
     }
   ],
+
+  "web_accessible_resources":[
+    "resources/*"
+  ],
+
+  "background": {
+      "scripts": ["background.js"],
+      "persistent": false
+  },
 
   "options_page": "options.html"
 }

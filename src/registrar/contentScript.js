@@ -1,52 +1,137 @@
 
 var $ = jQuery;
+var concatRegistrarResults;
+var doMakeInfoIcons;
 
 $(function() {
 
-	chrome.storage.sync.get('runScriptOnRegistrarPage', function(items) {
-		var $body;
-		var justEnabledSetting = false;
+	chrome.storage.sync.get(['concatRegistrarResults', 'showRegistrarInfoIcons'], function(items) {
 
-		if (!items.hasOwnProperty('runScriptOnRegistrarPage')) {
-			// First time using the extension
-			// Let's enable it by default.
-			chrome.storage.sync.set({'runScriptOnRegistrarPage': true}, function() {
-				console.log('Run script on Registrar Page enabled by default.');
-			});
+		concatRegistrarResults = items.concatRegistrarResults;
+		doMakeInfoIcons = items.showRegistrarInfoIcons;
 
-			justEnabledSetting = true;
+		// Run the script only if the user has checked the box in the extension options
+		if (items.concatRegistrarResults) {
+
+			// Use setTimeout() instead of explicitly calling run() because
+			// errors are formatted weirdly when errors 
+			// happen inside of a chrome.storage.sync.get() callback
+
+			// Concat the pages, and if user wants info icons to be made, make user icons.
+			setTimeout(function() { run(items.showRegistrarInfoIcons); }, 0);
+
+		} else if (items.showRegistrarInfoIcons) {
+			// Only make info icons, do not concat pages.
+			setTimeout(makeInfoIcons, 0);
 		}
 
-		// Run the script only if the user has checked the box in the extension options,
-		// or if the script has been enabled by default the first time this page was opened.
-		if (items.runScriptOnRegistrarPage || justEnabledSetting) {
-
-			$body = $('body');
-
-			$body.append($('<div id="hiddenPages" hidden></div>'))
-			loadMorePages($body);
-
-			injectFontAwesome();
-
-		}
 	});
 });
 
-function makeInfoIcons(context) {
-	$('tr.tbon > span.em', context).prepend('hi'); //<i class="fa fa-camera-retro fa-3x"></i>');
+/**
+ * Concatenate the pages.
+ * @param showInfoIcons whether to show the info icons after concatenating the pages.
+ */
+function run(showInfoIcons) {
+	var $body = $('body');
+
+	$body.append('<div id="hiddenPages" hidden></div>');
+
+	loadMorePages($body);
 }
 
-function loadMorePages (body) {
+function makeInfoIcons() {
+	var $row,
+		$a,
+		$link,
+		$rows = $('tr.tbon td span.em').parent().parent(),
+		min,
+		max;
+	
+	if (concatRegistrarResults) {
+		min = 0;
+		max = $rows.length - 1;
+	} else {
+		min = 1; 
+		max = $rows.length - 2;
+	}
+
+	for (var i = min; i <= max; i++) {
+		makeIcon($($rows[i]));
+	}
+}
+
+function makeIcon($row) {
+	$a = $row.parent().next().children(':first').children(':first').children(':first')
+	$link = $('<a class="info"></a>');
+
+	$row.prepend($link);
+	$link.attr('data-href', $a.attr('href'));
+
+	// Weird-looking way of making sure that $link's onclick method
+	// calls showDescription with itself as the parameter.
+	$link.click(
+		function($$link) {  return function(){	showDescription($$link); }; }($link)
+	);
+}
+
+function showDescription($link) {
+
+	if ($link.attr('data-loaded')) {
+
+		// Description has already been loaded.
+		// Show/hide the description
+		$link.next().toggle();
+
+	} else {
+
+		$.ajax({
+
+			url: $link.attr('data-href'),
+
+			success: function(data, textStatus, jqXHR) {
+				var text = '',
+					regex = /<p class="space">([\s\S]*?)<\/p>/g, 
+					match;
+
+				// Find all the matches in the received data
+				while (match = regex.exec(data)) {
+					text += match[1];
+					text += '<br><br>';
+				}
+
+				$link.after('<div class="description">' + text + '</div>');
+				$link.attr('data-loaded', true);
+			},
+
+			error: function(jqXHR, textStatus, errorThrown) { }
+
+		});
+	}
+	
+}
+
+/**
+ * Steps that must be taken after all the pages have been loaded.
+ */
+function finishUp() {
+
+	// Get rid of the Previous Page/Next Page buttons
+	$('div.otherClasses').parent().parent().parent().parent().parent().parent().remove();
+	$('a.otherClasses').parent().parent().parent().remove();
+
+	if (doMakeInfoIcons) {
+		makeInfoIcons();
+	}
+}
+
+function loadMorePages(body) {
 
 	var form = body.find('#next_page');
 
 	if (form.length === 0) {
 		// This must be the last page.
-		//console.log("Form not found on this page.");
-
-		// Get rid of the Previous Page/Next Page buttons
-		$('div.otherClasses').parent().parent().parent().parent().parent().parent().remove();
-		$('a.otherClasses').parent().parent().parent().remove();
+		finishUp();
 		return;
 	}
 
@@ -69,6 +154,12 @@ function loadMorePages (body) {
 			success: function(data, textStatus, jqXHR) {
 				var table, rows, len, targetTable;
 				
+				// Do not load the scripts in the header
+				// This reduces the number of web requests.
+				data = data.replace(/<script([\s\S]*?)>[\s\S]*?<\/script>/g, '')
+				
+				console.log(data);
+
 				// Put the background-loaded page into the hidden div
 				hiddenPages.html(data);
 
@@ -78,8 +169,6 @@ function loadMorePages (body) {
 				len = rows.length;
 
 				targetTable = $('body #classList');
-
-				makeInfoIcons(table);
 
 				// Copy over rows from the table of classes from the hidden div
 				$.each(rows, function(index, row) {
@@ -94,9 +183,7 @@ function loadMorePages (body) {
 				// Load more pages!
 				setTimeout(function(){ loadMorePages(hiddenPages); }, 0);
 			},
-			error: function(jqXHR, textStatus, errorThrown) {
-				//if fails      
-			}
+			error: function(jqXHR, textStatus, errorThrown) {	}
 		});
 
 		e.preventDefault(); //STOP default action
