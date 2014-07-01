@@ -1,16 +1,41 @@
 var $ = jQuery
 
 $(function() {
-	chrome.storage.sync.get('runScriptOnRegistrarPage', function(items) {
-		// Run the script only if the user has checked the box in the extension options.
-		if (items.runScriptOnRegistrarPage) {
 
-			$('body').append($('<div id="hiddenPages" hidden></div>'))
-			loadMorePages($('body'));
+	chrome.storage.sync.get('runScriptOnRegistrarPage', function(items) {
+		var justEnabledSetting = false;
+
+		if ($.isEmptyObject(items)) {
+			// First time using the extension
+			// Let's enable it by default.
+			chrome.storage.sync.set({'runScriptOnRegistrarPage': true}, function() {
+				console.log('Run script on Registrar Page enabled by default.');
+			});
+
+			justEnabledSetting = true;
+		}
+
+		var $body;
+
+		// Run the script only if the user has checked the box in the extension options,
+		// or if the script has been enabled by default the first time this page was opened.
+		if (items.runScriptOnRegistrarPage || justEnabledSetting) {
+
+			$body = $('body');
+
+			$body.append($('<div id="hiddenPages" hidden></div>'))
+			loadMorePages($body);
+
+			injectFontAwesome();
+			makeInfoIcons();
 
 		}
 	});
 });
+
+function makeInfoIcons() {
+	$('span.title').append('<i class="fa fa-camera-retro fa-3x"></i>');
+}
 
 function loadMorePages (body) {
 

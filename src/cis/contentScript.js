@@ -2,9 +2,23 @@
 var $ = jQuery;
 
 $(function() {
+
 	chrome.storage.sync.get('runScriptOnCisPage', function(items) {
-		// Run the script only if the user has checked the box in the extension options.
-		if (items.runScriptOnCisPage) {
+		var justEnabledSetting = false;
+
+		if ($.isEmptyObject(items)) {
+			// First time using the extension
+			// Let's enable it by default.
+			chrome.storage.sync.set({'runScriptOnRegistrarPage': true}, function() {
+				console.log('Run script on Registrar Page enabled by default.');
+			});
+
+			justEnabledSetting = true;
+		}
+
+		// Run the script only if the user has checked the box in the extension options,
+		// or if the script has been enabled by default the first time this page was opened.
+		if (items.runScriptOnCisPage || justEnabledSetting) {
 			makeCharts();
 		}
 	});
