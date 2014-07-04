@@ -10,8 +10,7 @@ tr.tbon td a.info {
 	margin-right: -30px;
 	margin-bottom: -30px;
 	margin-top: 0px;
-
-	background-image: url('chrome-extension://hnkgfpaamopphlecfiacponkgdjefknb/resources/information35.png');
+	background-image: url('chrome-extension://__MSG_@@extension_id__/resources/information35.png');
 	background-repeat: no-repeat;
 	background-size: contain;
 
