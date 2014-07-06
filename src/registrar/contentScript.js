@@ -88,7 +88,7 @@ function makeCheckIcon($row) {
 
 
 	$row.append($link);
-	$link.attr('data-href', $a.attr('href'));
+	$link.data('href', $a.attr('href'));
 
 	$.each($courseTimes, function(index, value) {
 		$courseTime = $(value);
@@ -136,6 +136,12 @@ function makeCheckIcon($row) {
 			}; 
 		}($link)
 	);
+
+	chrome.storage.sync.get('courseData', function(items) {
+		if (items.courseData[$link.data('href')]) {
+			$link.toggleClass('checkbox-selected');
+		}
+	});
 }
 
 function splitAndTrimLines (str) {
@@ -145,25 +151,35 @@ function splitAndTrimLines (str) {
 }
 
 function toggleOptions(data, name) {
-	console.log(JSON.stringify(data));
+	//console.log(JSON.stringify(data));
 	chrome.storage.sync.get('courseData', function(items) {
 		var key = data[0].link,
-			courses = items.courseData;
+			courses = items.courseData,
+			obj = {};
 
 		console.log(key);
 
 		if (!courses) {
 			courses = {};
 		}
-		if (courses.hasOwnProperty(key)) {
+		if (courses.key) {
 			delete courses[key];
 		} else {
 			courses[key] = {name: name, data:data};
 		}
-		console.log(JSON.stringify(courses));
-		chrome.storage.sync.set({courseData: courses});
+		// console.log(JSON.stringify(courses));
 
-	})
+		obj.courseData = courses; 
+		console.log(obj.courseData);
+
+		chrome.storage.sync.set(obj, function() {
+			console.log('Changes stored!');
+			chrome.storage.sync.get('courseData', function(result) {
+				console.log(result.courseData);
+			});
+		});
+
+	});
 }
 
 function showDescription($link) {

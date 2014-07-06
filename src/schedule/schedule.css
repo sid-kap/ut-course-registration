@@ -7,3 +7,19 @@ table {
 td {
 	border: 1px solid black;
 }
+
+table.calendar {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+table.calendar td,th {
+	border: 1px solid #C0C0C0;
+	width: 16.666%;
+	text-align: center;
+}
+
+table.calendar td.selected {
+	background-color: #BDECB6;
+	border: none;
+}
