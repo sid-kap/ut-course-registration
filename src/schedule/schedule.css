@@ -1,7 +1,11 @@
 
+body {
+	margin: 0 auto;
+	max-width: 800px;
+}
+
 table {
-	border-collapse: collapse !important; 
-	
+	border-collapse: collapse !important; 	
 }
 
 td {
@@ -22,4 +26,25 @@ table.calendar td,th {
 table.calendar td.selected {
 	background-color: #BDECB6;
 	border: none;
+}
+
+table.calendar td.hide {
+	display: none;
+}
+
+table#chooseClasses td.course {
+	background-color: red;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+}
+
+table#chooseClasses td.course-selected {
+	background-color: green !important;
+}
+
+a {
+	text-decoration: underline;
+	color: blue;
+	text-decoration: underline;
+	cursor: pointer; 
 }

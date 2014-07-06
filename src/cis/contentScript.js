@@ -3,7 +3,7 @@ var $ = jQuery;
 
 $(function() {
 
-	chrome.storage.sync.get('makeCisCharts', function(items) {
+	chrome.storage.local.get('makeCisCharts', function(items) {
 
 		// Run the script only if the user has checked the box in the extension options
 		if (items.makeCisCharts) {

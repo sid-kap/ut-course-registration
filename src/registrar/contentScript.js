@@ -5,7 +5,7 @@ var doMakeInfoIcons;
 
 $(function() {
 
-	chrome.storage.sync.get(['concatRegistrarResults', 'showRegistrarInfoIcons'], function(items) {
+	chrome.storage.local.get(['concatRegistrarResults', 'showRegistrarInfoIcons'], function(items) {
 
 		concatRegistrarResults = items.concatRegistrarResults;
 		doMakeInfoIcons = items.showRegistrarInfoIcons;
@@ -15,7 +15,7 @@ $(function() {
 
 			// Use setTimeout() instead of explicitly calling run() because
 			// errors are formatted weirdly when errors 
-			// happen inside of a chrome.storage.sync.get() callback
+			// happen inside of a chrome.storage.local.get() callback
 
 			// Concat the pages, and if user wants info icons to be made, make user icons.
 			setTimeout(function() { run(items.showRegistrarInfoIcons); }, 0);
@@ -137,9 +137,9 @@ function makeCheckIcon($row) {
 		}($link)
 	);
 
-	chrome.storage.sync.get('courseData', function(items) {
-		if (items.courseData[$link.data('href')]) {
-			$link.toggleClass('checkbox-selected');
+	chrome.storage.local.get('courseData', function(items) {
+		if (items.courseData && items.courseData[$link.data('href')]) {
+			$link.addClass('checkbox-selected');
 		}
 	});
 }
@@ -152,32 +152,39 @@ function splitAndTrimLines (str) {
 
 function toggleOptions(data, name) {
 	//console.log(JSON.stringify(data));
-	chrome.storage.sync.get('courseData', function(items) {
+	chrome.storage.local.get('courseData', function(items) {
 		var key = data[0].link,
 			courses = items.courseData,
 			obj = {};
 
-		console.log(key);
+		console.log(courses);
 
 		if (!courses) {
 			courses = {};
 		}
-		if (courses.key) {
+		if (courses[key]) {
 			delete courses[key];
+
 		} else {
 			courses[key] = {name: name, data:data};
 		}
-		// console.log(JSON.stringify(courses));
 
 		obj.courseData = courses; 
 		console.log(obj.courseData);
 
-		chrome.storage.sync.set(obj, function() {
+		chrome.storage.local.set(obj, function() {
 			console.log('Changes stored!');
-			chrome.storage.sync.get('courseData', function(result) {
-				console.log(result.courseData);
+			if (chrome.extension.lastError) {
+				console.log('An error occurred: ' + chrome.extension.lastError.message);
+			}
+			chrome.storage.local.get('courseData', function(result) {
+				
 			});
 		});
+		
+		// console.log(JSON.stringify(courses));
+
+
 
 	});
 }

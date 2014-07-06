@@ -1,6 +1,6 @@
 
 document.addEventListener('DOMContentLoaded', function() {
-	chrome.storage.sync.get(['concatRegistrarResults', 'showRegistrarInfoIcons', 'makeCisCharts'], function(items) {
+	chrome.storage.local.get(['concatRegistrarResults', 'showRegistrarInfoIcons', 'makeCisCharts'], function(items) {
 
 		document.getElementById('concatCheckbox').checked = items['concatRegistrarResults'];
 		document.getElementById('infoIconsCheckbox').checked = items['showRegistrarInfoIcons'];
@@ -23,7 +23,7 @@ function updatePrefs() {
 			'makeCisCharts':         isCisChartsOptionChecked
 		};
 
-	chrome.storage.sync.set(settings, function() {
+	chrome.storage.local.set(settings, function() {
 		console.log('settings updated');
 	});
 }

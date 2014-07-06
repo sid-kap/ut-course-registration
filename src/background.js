@@ -3,14 +3,14 @@
 chrome.runtime.onInstalled.addListener(function(details) {
 	var settings = ['concatRegistrarResults', 'showRegistrarInfoIcons', 'makeCisCharts'];
 
-	chrome.storage.sync.get(settings, function(items) {
+	chrome.storage.local.get(settings, function(items) {
 		var setting;
 
 		for (var i in settings) {
 			setting = settings[i];
 			if (!items.hasOwnProperty(setting)) {
 				// Enable all settings that haven't been explicitly enabled or disabled before.
-				chrome.storage.sync.set({setting: true}, function() { });
+				chrome.storage.local.set({setting: true}, function() { });
 			}
 		}
 	});

@@ -1,55 +1,90 @@
 var firstHour = 8*2;
 var lastHour = 21*2 + 1;
 
+var courseData;
+var currentScheduleIndex;
+var schedules;
+var currentClasses = [];
 
 $(function() {
-	chrome.storage.sync.get('courseData', function(items) {
-		print(items.courseData);
+	chrome.storage.local.get('courseData', function(items) {
+		//print(items.courseData);
 
-		var courseData = items.courseData;
-		courseData = parseDaysAndTimes(courseData);
+		courseData = parseDaysAndTimes(items.courseData);
 		displayClassNames(courseData);
 
-		drawSchedules(makeSchedules(courseData));
+		schedules = makeSchedules(courseData);
+		$('span#schedulesCount').text(schedules.length);
+		showScheduleAtIndex(0);
 		//displayAllListings(courseData);
 		//$('body').append(JSON.stringify(courseData, null, '&nbsp;  ').replace(/\n/g, '<br>'));
 
 	});
 
 	document.querySelector('a#clear').addEventListener('click', clear);
+	document.querySelector('button#go').addEventListener('click', recalculateSchedules);
+
+	document.querySelector('a#prev').addEventListener('click', prev);
+	document.querySelector('a#next').addEventListener('click', next);
 });
+
+function prev() {
+	if (currentScheduleIndex === 0) {
+		return;
+	}
+	showScheduleAtIndex(currentScheduleIndex - 1);
+}
+
+function next() {
+	if (currentScheduleIndex === schedules.length - 1) {
+		return;
+	}
+
+	showScheduleAtIndex(currentScheduleIndex + 1);
+}
+
+function showScheduleAtIndex(i) {
+	var div = $('div#calendarPlaceholder');
+	currentScheduleIndex = i;
+
+	div.empty();
+	div.append(drawSchedule(schedules[i]));
+	$('span#currentScheduleIndex').text(currentScheduleIndex+1);
+}
 
 function displayClassNames (courseData) {
 	var $table = $('table#chooseClasses').children(':first').children(':first');
 	$.each(courseData, function(index, val) {
+		var $td = $('<td class="course course-selected">' + val.name + '</td>');
+		currentClasses.push(index);
+		$td.click(function() {
+			$(this).toggleClass('course-selected');
 
-		$table.append('<td>' + val.name + '</td>');
-	});
-}
-
-function displayAllListings (courseData) {
-	var $tbody = $('tbody#table');
-	$.each(courseData, function(index, val) {
-
-		$tbody.append('<tr><td colspan="6">'+ val.name + '</td></tr>');
-
-		for (j in val.data) {
-			$tr = $('<tr></tr>');
-			for (k in val.data[j]) {
-				$tr.append('<td>' + val.data[j][k] + '</td>');
+			if (_.contains(currentClasses, index)) {
+				currentClasses = _.without(currentClasses, index);
+			} else {
+				currentClasses.push(index);
 			}
-			$tbody.append($tr);
-		}
+		});
+		$table.append($td);
 	});
 }
 
 function clear() {
-	chrome.storage.sync.remove('courseData');
+	chrome.storage.local.remove('courseData');
 }
 
 
 
+function recalculateSchedules() {
 
+	var filteredCourseData = _.pick(courseData, currentClasses);
+	
+	schedules = makeSchedules(filteredCourseData);
+	console.log(schedules.length);
+	$('span#schedulesCount').text(schedules.length);
+	showScheduleAtIndex(0);
+}
 
 
 function makeSchedules(courseData) {
@@ -60,11 +95,11 @@ function makeSchedules(courseData) {
 		} else {
 			var branched = _.map(acc, function(match) {
 				//console.log(JSON.stringify(match));
-				return _.map(xs.data, function(x) {
+				return _.compact(_.map(xs.data, function(x) {
 					var result;
 					//console.log(x);
 
-					if (compatible(match, x)) {
+					if (!conflict(match, x)) {
 						result = _.clone(match);
 						result.push(x);
 						return result;
@@ -72,9 +107,10 @@ function makeSchedules(courseData) {
 						return false;
 					}
 
-				});
+				}));
 			});
 			var result = _.flatten(branched, true);
+			result = _.compact(result);
 			//_.each(result, function(a){console.log(a)});
 			return result;
 		}
@@ -83,26 +119,18 @@ function makeSchedules(courseData) {
 	return _.foldl(courseData, makeMatches, []);
 }
 
-function compatible(xs, y) {
-	_.each(xs, function(x) {
-		_.each(x.daysAndTimes, function(xDayTime) {
-			_.each(y.daysAndTimes, function(yDayTime) {
-				if (xDayTime === yDayTime) {
-					if (_.intersection(xDayTime.days, yDayTime.days)) {
-						if (timesOverlap(xDayTime.times, yDayTime.times)) {
-							return false;
-						}
-					}
-				}
+function conflict(xs, y) {
+	return _.find(xs, function(x) {
+		return _.find(x.daysAndTimes, function(xDayTime) {
+			return _.find(y.daysAndTimes, function(yDayTime) {
+				return (_.intersection(xDayTime.days, yDayTime.days).length && timesOverlap(xDayTime.times, yDayTime.times));
 			});
 		});
 	});
-
-	return true;
 }
 
 function timesOverlap(x, y) {
-	return (y[0] > x[0] && y[0] < x[1]) || (x[0] > y[0] && x[0] < y[1]);
+	return (y[0] >= x[0] && y[0] < x[1]) || (x[0] >= y[0] && x[0] < y[1]);
 }
 
 
@@ -140,12 +168,8 @@ function drawSchedules(schedules) {
 }
 
 function drawSchedule(schedule) {
-	//print(schedule);
 
 	$calendar = newCalendar();
-	//console.log($calendar);
-
-	//console.log(schedule.length);
 
 	_.each(schedule, function (courseTime) {
 		//print(courseTime.daysAndTimes);
@@ -154,7 +178,7 @@ function drawSchedule(schedule) {
 		})
 	});
 
-	$('body').append($calendar);
+	return $calendar;
 }
 
 
@@ -218,23 +242,29 @@ function addTestTimes() {
 
 
 function addTime (obj, context, text) {
+	var rowspan;
 	//print(obj);
 	for (var i in obj.days) {
 		var first = true;
+		var hour = firstHour;
 		var count = obj.times[1] - obj.times[0];
-		for (var j = obj.times[0]; j < obj.times[1]; j++) {
-			var row = $('tbody', context).children()[j - firstHour];
-			var tds = $(row).children();
-			var $td = $(tds[obj.days[i] + 1]);
-			$td.addClass('selected');
-			if (first) {
-				$td.html(text + '<br>' + obj.time);
-				first = false;
-				$td.attr('rowspan', count);
-			} else {
-				$td.remove();
+
+		$.each($('tbody', context).children(), function(index, val) {
+			$td = $($(val).children()[obj.days[i] + 1]);
+
+			if (hour >= obj.times[0] && hour < obj.times[1]) {
+				$td.addClass('selected');
+				if (first) {
+					$td.html(text + '<br>' + obj.time);
+					first = false;
+					$td.attr('rowspan', count);
+				} else {
+					$td.addClass('hide');
+				}
 			}
-		}
+
+			hour++;
+		});
 	}
 	
 }
@@ -246,46 +276,61 @@ function parseDayTime (data) {
 		day: data.day,
 		time: data.time
 	};
-	var day = data.day;
+	
+	// Parse the days
+	obj.days = parseDays(data.day);
+
+	// Parse the time
+	obj.times = parseTimes(data.time);
+
+	return obj;
+}
+
+function parseDays (str) {
+	var days = [];
 
 	// Parse the day of week
-	while (day) {
-		switch (day.substring(0,1)) {
+	while (str) {
+		switch (str.substring(0,1)) {
 			case 'M': 
-				obj.days.push(0); 
-				day = day.substring(1);
+				days.push(0); 
+				str = str.substring(1);
 				continue;
 			case 'W': 
-				obj.days.push(2); 
-				day = day.substring(1);
+				days.push(2); 
+				str = str.substring(1);
 				continue;
 			case 'F': 
-				obj.days.push(4); 
-				day = day.substring(1);
+				days.push(4); 
+				str = str.substring(1);
 				continue;
 		}
-		if (day.substring(0,2) === 'TH') {
-			obj.days.push(3);
-			day = day.substring(2);
-		} else if (day.substring(0,1) === 'T') {
-			obj.days.push(1);
-			day = day.substring(1);
+		if (str.substring(0,2) === 'TH') {
+			days.push(3);
+			str = str.substring(2);
+		} else if (str.substring(0,1) === 'T') {
+			days.push(1);
+			str = str.substring(1);
 		} else {
-			throw ('Day cannot be parsed: ' + day);
+			throw ('Day cannot be parsed: ' + str);
 		}
 	}
 
-	// Parse the time
-	var time = data.time;
-	var match = time.match(/(\d+) to (\d+)([ap])/);
+	return days;
+}
+
+function parseTimes (str) {
+	var match = str.match(/(\d+) to (\d+)([ap])/),
+		times = [];
+
 	if (!match) {
 		throw 'Time cannot be parsed: ' + time;
 	}
 
 	if (match[3] === 'a') {
 		// Class must start and end in the morning
-		obj.times.push(toHundrethsTime(parseInt(match[1])) / 50);
-		obj.times.push(toHundrethsTime(parseInt(match[2])) / 50);
+		times.push(toHundrethsTime(parseInt(match[1])) / 50);
+		times.push(toHundrethsTime(parseInt(match[2])) / 50);
 	} else {
 		// match[2] must equal 'p'
 		// Class ends in afternoon, but could start before or afternoon
@@ -294,20 +339,22 @@ function parseDayTime (data) {
 		var last = toHundrethsTime(parseInt(match[2]));
 
 		if (last >= 1200) {
-			// ended before 1pm
-			obj.times.push(first / 50);
-			obj.times.push(last  / 50);
+			// ends at 1200p or 1230p
+			times.push(first / 50);
+			times.push(last  / 50);
 		} else {
 			// ends at 1pm or later
-			if (first < 1200) {
-				first += 1200;
+			first += 1200;
+			last += 1200;
+			if (first > last) {
+				first -= 1200;
 			}
-			obj.times.push(first / 50);
-			obj.times.push(last  / 50 + 24);
+			times.push(first / 50);
+			times.push(last  / 50);
 		}
 	}
 
-	return obj;
+	return times;
 }
 
 function toHundrethsTime (time) {
