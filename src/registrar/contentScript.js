@@ -57,13 +57,15 @@ function makeInfoIcons() {
 	}
 
 	for (var i = min; i <= max; i++) {
-		makeIcon($($rows[i]));
+		$row = $($rows[i]);
+		makeIcon($row);
+		makeCheckIcon($row);
 	}
 }
 
 function makeIcon($row) {
-	$a = $row.parent().next().children(':first').children(':first').children(':first')
-	$link = $('<a class="info"></a>');
+	var $a = $row.parent().next().children(':first').children(':first').children(':first'), 
+		$link = $('<a class="info"></a>');
 
 	$row.prepend($link);
 	$link.attr('data-href', $a.attr('href'));
@@ -73,6 +75,95 @@ function makeIcon($row) {
 	$link.click(
 		function($$link) {  return function(){	showDescription($$link); }; }($link)
 	);
+}
+
+function makeCheckIcon($row) {
+	var $courseTimes = $row.parent().nextUntil('tr.tbon'),
+		$a = $row.parent().next().children(':first').children(':first').children(':first'),
+		$link = $('<a class="checkbox"></a>'),
+		i,
+		options = [],
+		obj,
+		name = $row.text().replace(/\s+/g, ' ').trim();
+
+
+	$row.append($link);
+	$link.attr('data-href', $a.attr('href'));
+
+	$.each($courseTimes, function(index, value) {
+		$courseTime = $(value);
+		$children = $courseTime.children();
+
+		obj = {};
+		$children.each(function(index, val) {
+			var $this = $(this);
+
+			switch (index) {
+				case 0:
+					obj.link = $this.children(':first').children(':first').attr('href');
+					break;
+				case 1: 
+					obj.days = splitAndTrimLines($this.children(':first').html());
+					break;
+				case 2:
+					obj.times = splitAndTrimLines($this.children(':first').html());
+					break;
+				case 3:
+					obj.rooms = splitAndTrimLines($this.children(':first').html());
+					break;
+				case 4:
+					obj.teacher = $this.text().trim();
+					break;
+				case 5:
+					obj.availability = $this.text().trim();
+					break;
+			}
+
+		});
+
+		options.push(obj);
+	});
+
+	$link.data('options', options);
+
+	// Weird-looking way of making sure that $link's onclick method
+	// calls showDescription with itself as the parameter.
+	$link.click(
+		function($$link) {
+			return function(){	
+				$$link.toggleClass('checkbox-selected');
+				toggleOptions($$link.data('options'), name);
+			}; 
+		}($link)
+	);
+}
+
+function splitAndTrimLines (str) {
+	var arr = str.split('<br>');
+	arr = arr.map(function(s){return s.replace(/(\s|&nbsp;)+/g, ' ').trim(); });
+	return arr;
+}
+
+function toggleOptions(data, name) {
+	console.log(JSON.stringify(data));
+	chrome.storage.sync.get('courseData', function(items) {
+		var key = data[0].link,
+			courses = items.courseData;
+
+		console.log(key);
+
+		if (!courses) {
+			courses = {};
+		}
+		if (courses.hasOwnProperty(key)) {
+			delete courses[key];
+		} else {
+			courses[key] = {name: name, data:data};
+		}
+		console.log(JSON.stringify(courses));
+		chrome.storage.sync.set({courseData: courses});
+
+	})
 }
 
 function showDescription($link) {
@@ -158,7 +249,7 @@ function loadMorePages(body) {
 				// This reduces the number of web requests.
 				data = data.replace(/<script([\s\S]*?)>[\s\S]*?<\/script>/g, '')
 				
-				console.log(data);
+				//console.log(data);
 
 				// Put the background-loaded page into the hidden div
 				hiddenPages.html(data);

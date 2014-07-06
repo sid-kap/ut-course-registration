@@ -17,6 +17,32 @@ tr.tbon td a.info {
 	z-index: 2;
 }
 
+tr.tbon td {
+	position: relative;
+}
+
+tr.tbon td a.checkbox {
+	display: block;
+	position: absolute;
+	right: -5px;
+	top: 0px;
+	width: 40px;
+	height: 40px;
+	margin-left: -30px;
+	margin-right: -30px;
+	margin-bottom: -30px;
+	margin-top: 0px;
+	background-image: url('chrome-extension://__MSG_@@extension_id__/resources/check29.png');
+	background-repeat: no-repeat;
+	background-size: contain;
+
+	z-index: 3;
+}
+
+tr.tbon td a.checkbox-selected {
+	background-image: url('chrome-extension://__MSG_@@extension_id__/resources/check30.png') !important;
+}
+
 tr.tbon td div.description {
 	position: relative;
 	right: 420px;
@@ -28,3 +54,4 @@ tr.tbon td div.description {
 	margin-bottom: -30px;
 	margin-top: 0px;
 }
+
