@@ -55,8 +55,9 @@ function showScheduleAtIndex(i) {
 function displayClassNames (courseData) {
 	var $table = $('table#chooseClasses').children(':first').children(':first');
 	$.each(courseData, function(index, val) {
-		var $td = $('<td class="course course-selected">' + val.name + '</td>');
 		currentClasses.push(index);
+
+		var $td = $('<td class="course course-selected">' + val.name + '</td>');
 		$td.click(function() {
 			$(this).toggleClass('course-selected');
 
@@ -66,6 +67,15 @@ function displayClassNames (courseData) {
 				currentClasses.push(index);
 			}
 		});
+
+		var $a = $('<a>X</a>');
+		$a.click(function() {
+			deleteClass(index);
+			$(this).parent().remove();
+		});
+
+		$td.append($a);
+
 		$table.append($td);
 	});
 }
@@ -74,7 +84,20 @@ function clear() {
 	chrome.storage.local.remove('courseData');
 }
 
+function deleteClass(index) {
+	var obj = {};
 
+	delete courseData[index];
+	obj.courseData = courseData;
+
+
+
+	chrome.storage.local.set(obj, function() {
+		console.log(index + 'class deleted');
+	});
+
+	currentClasses = _.without(currentClasses, index);
+}
 
 function recalculateSchedules() {
 
