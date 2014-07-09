@@ -25,7 +25,7 @@ table.calendar td,th {
 
 table.calendar td.selected {
 	background-color: #BDECB6;
-	border: none;
+	border: 1px solid black !important;
 }
 
 table.calendar td.hide {

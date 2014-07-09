@@ -88,6 +88,15 @@ function recalculateSchedules() {
 
 
 function makeSchedules(courseData) {
+	_.each(courseData, function(course, index) {
+		course.data = _.filter(course.data, function(m) {
+			switch (m.availability) {
+				case 'cancelled': return false;
+				case 'closed': 	  return false;
+				default:          return true;
+			}
+		});
+	});
 	var makeMatches = function (acc, xs) {
 		//console.log(acc.length);
 		if (acc.length === 0) {
