@@ -206,7 +206,7 @@ function drawSchedule(schedule) {
 	_.each(schedule, function (courseTime) {
 		//print(courseTime.daysAndTimes);
 		_.each(courseTime.daysAndTimes, function(dayTime) {
-			addTime(dayTime, $calendar, courseTime.teacher);
+			addTime(dayTime, $calendar, courseTime);
 		})
 	});
 
@@ -268,12 +268,7 @@ function newCalendar() {
 }
 
 
-function addTestTimes() {
-	addTime(parseDayTime({day: 'TTH', time: '1100 to 1230p'}));
-}
-
-
-function addTime (obj, context, text) {
+function addTime (obj, context, courseTime) {
 	var rowspan;
 	//print(obj);
 	for (var i in obj.days) {
@@ -287,7 +282,7 @@ function addTime (obj, context, text) {
 			if (hour >= obj.times[0] && hour < obj.times[1]) {
 				$td.addClass('selected');
 				if (first) {
-					$td.html(text + '<br>' + obj.time);
+					$td.html('<a target="_blank" href="https://utdirect.utexas.edu/registrar/nrclav/' + courseTime.link + '">' + courseTime.teacher + '</a>' + '<br>' + obj.time);
 					first = false;
 					$td.attr('rowspan', count);
 				} else {
