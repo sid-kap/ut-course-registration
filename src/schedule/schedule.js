@@ -68,7 +68,7 @@ function displayClassNames (courseData) {
 			}
 		});
 
-		var $a = $('<a>X</a>');
+		var $a = $('<a class="remove"></a>');
 		$a.click(function() {
 			deleteClass(index);
 			$(this).parent().remove();

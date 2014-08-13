@@ -1,3 +1,6 @@
+* {
+	font-family: 'Open Sans', sans-serif;
+}
 
 body {
 	margin: 0 auto;
@@ -33,13 +36,14 @@ table.calendar td.hide {
 }
 
 table#chooseClasses td.course {
-	background-color: red;
+	position: relative;
+	background-color: hsla(0, 70%, 50%, 0.9);
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
 }
 
 table#chooseClasses td.course-selected {
-	background-color: green !important;
+	background-color: hsla(120,70%,50%,0.9); /* !important;*/
 }
 
 a {
@@ -47,4 +51,16 @@ a {
 	color: blue;
 	text-decoration: underline;
 	cursor: pointer; 
+}
+
+a.remove {
+	width: 30px;
+	height: 30px;
+	background-image: url('chrome-extension://__MSG_@@extension_id__/resources/remove11.png');
+	background-repeat: no-repeat;
+	background-size: contain;
+	/*display: block;*/
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
 }
