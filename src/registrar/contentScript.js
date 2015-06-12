@@ -33,6 +33,8 @@ $(function() {
  * @param showInfoIcons whether to show the info icons after concatenating the pages.
  */
 function run(showInfoIcons) {
+    $('select#fos_fl').select2();
+
 	var $body = $('body');
 
 	$body.append('<div id="hiddenPages" hidden></div>');
@@ -235,6 +237,7 @@ function finishUp() {
 	if (doMakeInfoIcons) {
 		makeInfoIcons();
 	}
+
 }
 
 function loadMorePages(body) {
