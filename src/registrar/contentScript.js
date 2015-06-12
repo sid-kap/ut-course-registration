@@ -14,7 +14,7 @@ $(function() {
 		if (items.concatRegistrarResults) {
 
 			// Use setTimeout() instead of explicitly calling run() because
-			// errors are formatted weirdly when errors 
+			// errors are formatted weirdly when errors
 			// happen inside of a chrome.storage.local.get() callback
 
 			// Concat the pages, and if user wants info icons to be made, make user icons.
@@ -47,12 +47,12 @@ function makeInfoIcons() {
 		$rows = $('tr.tbon td span.em').parent().parent(),
 		min,
 		max;
-	
+
 	if (concatRegistrarResults) {
 		min = 0;
 		max = $rows.length - 1;
 	} else {
-		min = 1; 
+		min = 1;
 		max = $rows.length - 2;
 	}
 
@@ -64,7 +64,7 @@ function makeInfoIcons() {
 }
 
 function makeIcon($row) {
-	var $a = $row.parent().next().children(':first').children(':first').children(':first'), 
+	var $a = $row.parent().next().children(':first').children(':first').children(':first'),
 		$link = $('<a class="info"></a>');
 
 	$row.prepend($link);
@@ -102,7 +102,7 @@ function makeCheckIcon($row) {
 				case 0:
 					obj.link = $this.children(':first').children(':first').attr('href');
 					break;
-				case 1: 
+				case 1:
 					obj.days = splitAndTrimLines($this.children(':first').html());
 					break;
 				case 2:
@@ -130,10 +130,10 @@ function makeCheckIcon($row) {
 	// calls showDescription with itself as the parameter.
 	$link.click(
 		function($$link) {
-			return function(){	
+			return function(){
 				$$link.toggleClass('checkbox-selected');
 				toggleOptions($$link.data('options'), name);
-			}; 
+			};
 		}($link)
 	);
 
@@ -169,7 +169,7 @@ function toggleOptions(data, name) {
 			courses[key] = {name: name, data:data};
 		}
 
-		obj.courseData = courses; 
+		obj.courseData = courses;
 		console.log(obj.courseData);
 
 		chrome.storage.local.set(obj, function() {
@@ -178,10 +178,10 @@ function toggleOptions(data, name) {
 				console.log('An error occurred: ' + chrome.extension.lastError.message);
 			}
 			chrome.storage.local.get('courseData', function(result) {
-				
+
 			});
 		});
-		
+
 		// console.log(JSON.stringify(courses));
 
 
@@ -205,7 +205,7 @@ function showDescription($link) {
 
 			success: function(data, textStatus, jqXHR) {
 				var text = '',
-					regex = /<p class="space">([\s\S]*?)<\/p>/g, 
+					regex = /<p class="space">([\s\S]*?)<\/p>/g,
 					match;
 
 				// Find all the matches in the received data
@@ -222,7 +222,7 @@ function showDescription($link) {
 
 		});
 	}
-	
+
 }
 
 /**
@@ -230,9 +230,7 @@ function showDescription($link) {
  */
 function finishUp() {
 
-	// Get rid of the Previous Page/Next Page buttons
-	$('div.otherClasses').parent().parent().parent().parent().parent().parent().remove();
-	$('a.otherClasses').parent().parent().parent().remove();
+    $('a#next_nav_link').remove();
 
 	if (doMakeInfoIcons) {
 		makeInfoIcons();
@@ -241,68 +239,57 @@ function finishUp() {
 
 function loadMorePages(body) {
 
-	var form = body.find('#next_page');
+	var nextPageLink = body.find('a#next_nav_link');
 
-	if (form.length === 0) {
+	if (nextPageLink.length === 0) {
 		// This must be the last page.
 		finishUp();
 		return;
 	}
 
-	//Callback handler for form submit event
-	form.submit(function(e) {
+    var hiddenPages = $('#hiddenPages');
+    var url = nextPageLink.first().attr('href');
+    console.log(url);
 
-		var postData = $(this).serializeArray();
-		var formURL = $(this).attr("action");
+    // Empty out the hidden page div so that we can add the
+    // load the next page into it.
+    hiddenPages.empty();
 
-		var hiddenPages = $('#hiddenPages');
+    $.ajax({
+        url : url,
+        type: "GET",
+        success: function(data, textStatus, jqXHR) {
+            var table, rows, len, targetTable;
 
-		// Empty out the hidden page div so that we can add the 
-		// load the next page into it.
-		hiddenPages.empty();
+            // Do not load the scripts in the header
+            // This reduces the number of web requests.
+            data = data.replace(/<script([\s\S]*?)>[\s\S]*?<\/script>/g, '')
 
-		$.ajax({
-			url : formURL,
-			type: "GET",
-			data : postData,
-			success: function(data, textStatus, jqXHR) {
-				var table, rows, len, targetTable;
-				
-				// Do not load the scripts in the header
-				// This reduces the number of web requests.
-				data = data.replace(/<script([\s\S]*?)>[\s\S]*?<\/script>/g, '')
-				
-				//console.log(data);
+            //console.log(data);
 
-				// Put the background-loaded page into the hidden div
-				hiddenPages.html(data);
+            // Put the background-loaded page into the hidden div
+            hiddenPages.html(data);
 
-				table = hiddenPages.find('#classList tbody');
+            table = hiddenPages.find('table.rwd-table tbody');
 
-				rows = table.children();
-				len = rows.length;
+            rows = table.children();
+            len = rows.length;
 
-				targetTable = $('body #classList');
+            targetTable = $('body table.rwd-table');
 
-				// Copy over rows from the table of classes from the hidden div
-				$.each(rows, function(index, row) {
-					// Do not copy the first and last row of each table
-					// (we don't want the Previous page/Next page links)
-					if (index != 0 && index < len-2) {
-						targetTable.append(row);
-						//console.log(row.innerText.replace(/\s{2,}/g, ' '));
-					}
-				});
+            // Copy over rows from the table of classes from the hidden div
+            $.each(rows, function(index, row) {
+                // Do not copy the first and last row of each table
+                // (we don't want the Previous page/Next page links)
+                if (index != 0 && index < len) {
+                    targetTable.append(row);
+                    //console.log(row.innerText.replace(/\s{2,}/g, ' '));
+                }
+            });
 
-				// Load more pages!
-				setTimeout(function(){ loadMorePages(hiddenPages); }, 0);
-			},
-			error: function(jqXHR, textStatus, errorThrown) {	}
-		});
-
-		e.preventDefault(); //STOP default action
-	}); 
-
-	form.submit(); //Submit the form
-	form.unbind();
+            // Load more pages!
+            setTimeout(function(){ loadMorePages(hiddenPages); }, 0);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {	}
+    });
 }
