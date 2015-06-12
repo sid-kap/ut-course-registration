@@ -3,7 +3,7 @@
 
   "name": "UT Course Registration",
   "description": "Adds features to UT's course catalog.",
-  "version": "1.2",
+  "version": "1.2.1",
 
   "permissions": [
     "https://utdirect.utexas.edu/registrar/",
