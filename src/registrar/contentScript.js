@@ -284,7 +284,7 @@ function loadMorePages(body) {
             $.each(rows, function(index, row) {
                 // Do not copy the first and last row of each table
                 // (we don't want the Previous page/Next page links)
-                if (index != 0 && index < len) {
+                if (index >= 0 && index < len) {
                     targetTable.append(row);
                     //console.log(row.innerText.replace(/\s{2,}/g, ' '));
                 }
